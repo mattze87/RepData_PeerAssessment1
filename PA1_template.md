@@ -1,123 +1,181 @@
-1. Loading and preprocessing data
-=================================
 
-Here is the code for reading in and preprocessing the data.
+---
+title: RR WEEK 2 - COURSE PROJECT 1
+output: 
+  html_document:
+    keep_md: true
 
-    library(ggplot2) # load required packages
-        
-    data <- read.csv("activity.csv") # read in data 
-    data_clean <- data[!is.na(data$steps),] # remove rows with NA values i.e. consider only clean/tidy data  
 
-2. Histogram of the total number of steps taken each day.
-=========================================================
+---
 
-For the clean data the total number of steps is calculated and plotted
-in a histogram.
 
-    sum_steps <- aggregate(data_clean$steps, by = list(data_clean$date), sum) # sum steps of clean data per date 
-    names(sum_steps) <- c("date","steps") # rename columns of result
-        
-    hist_steps <- ggplot(sum_steps, aes(date,steps)) + geom_histogram(stat = "identity")+ ggtitle("Number of steps per day")  # create histogram
+# 1. Loading and preprocessing data 
 
-    ## Warning: Ignoring unknown parameters: binwidth, bins, pad
+Here is the code for reading in and preprocessing the data. 
 
-    print(hist_steps)
 
-![](PA1_template_files/figure-markdown_strict/unnamed-chunk-2-1.png)
+```r
+library(ggplot2) # load required packages
+    
+data <- read.csv("activity.csv") # read in data 
+data_clean <- data[!is.na(data$steps),] # remove rows with NA values i.e. consider only clean/tidy data  
+```
 
-3. Mean and median of total number of steps
-===========================================
 
-Furthermore, mean and median of the total number of steps is calculated.
+```r
+knitr::opts_chunk$set(fig.path='Figs/')
+```
 
-    mean(sum_steps$steps) # calculate mean
+# 2. Histogram of the total number of steps taken each day.  
 
-    ## [1] 10766.19
+For the clean data the total number of steps is calculated and plotted in a histogram. 
 
-    median(sum_steps$steps) # calculate median 
 
-    ## [1] 10765
+```r
+sum_steps <- aggregate(data_clean$steps, by = list(data_clean$date), sum) # sum steps of clean data per date 
+names(sum_steps) <- c("date","steps") # rename columns of result
+    
+hist_steps <- ggplot(sum_steps, aes(date,steps)) + geom_histogram(stat = "identity")+ ggtitle("Number of steps per day")  # create histogram
+```
 
-4. Time series plot of the average number of steps taken
-========================================================
+```
+## Warning: Ignoring unknown parameters: binwidth, bins, pad
+```
 
-Next, the average number of steps is calculated per interval and plotted
-in a time series.
+```r
+print(hist_steps)
+```
 
-    mean_int <- aggregate(data_clean$steps,by = list(data_clean$interval), mean) # calculate average number of steps per interval
-    names(mean_int) <- c("interval","mean(steps)") # rename columns of result 
-        
-    plot(mean_int$interval, mean_int$`mean(steps)`, type = "l", xlab = "Interval", ylab = "Avg(# steps)", 
-        main = "Average number of steps per interval", col = "blue") # create time series 
+![](Figs/unnamed-chunk-2-1.png)<!-- -->
 
-![](PA1_template_files/figure-markdown_strict/unnamed-chunk-4-1.png)
+# 3. Mean and median of total number of steps   
 
-5. The 5-minute interval that, on average, contains the maximum number of steps
-===============================================================================
+Furthermore, mean and median of the total number of steps is calculated. 
+
+
+```r
+mean(sum_steps$steps) # calculate mean
+```
+
+```
+## [1] 10766.19
+```
+
+```r
+median(sum_steps$steps) # calculate median 
+```
+
+```
+## [1] 10765
+```
+
+# 4. Time series plot of the average number of steps taken
+
+Next, the average number of steps is calculated per interval and plotted in a time series. 
+
+
+```r
+mean_int <- aggregate(data_clean$steps,by = list(data_clean$interval), mean) # calculate average number of steps per interval
+names(mean_int) <- c("interval","mean(steps)") # rename columns of result 
+    
+plot(mean_int$interval, mean_int$`mean(steps)`, type = "l", xlab = "Interval", ylab = "Avg(# steps)", 
+    main = "Average number of steps per interval", col = "blue") # create time series 
+```
+
+![](Figs/unnamed-chunk-4-1.png)<!-- -->
+
+# 5. The 5-minute interval that, on average, contains the maximum number of steps
 
 This interval is calculated as follows:
 
-    mean_int[mean_int[,2] == max(mean_int$`mean(steps)`), 1] # determine interval with maximum numver of steps 
 
-    ## [1] 835
+```r
+mean_int[mean_int[,2] == max(mean_int$`mean(steps)`), 1] # determine interval with maximum numver of steps 
+```
 
-6. Code to describe and show a strategy for imputing missing data
-=================================================================
+```
+## [1] 835
+```
 
-The total number of missing values is:
+# 6. Code to describe and show a strategy for imputing missing data
 
-    sum(!is.na(data$steps)) # go back to raw data (variable data) and determine # NAs
+The total number of missing values is: 
 
-    ## [1] 15264
 
-Now we want to fill in the missing values. Each NA value is set to be
-the average number of steps for the corresponding interval for the tidy
-data.
+```r
+sum(!is.na(data$steps)) # go back to raw data (variable data) and determine # NAs
+```
 
-    m_data <- merge(data,mean_int, by.x = "interval", by.y = "interval", all.x = TRUE) # merge raw data (data) and table with avg # of steps per interval (mean_int)
-        
-    for (i in which(is.na(m_data[,2]))) { # for each NA set the missing value to be the avg # of steps of the corresponding interval 
-        m_data[i,2] <- m_data[i,4]
-    } 
-        
-    m_data$`mean(steps)` <- NULL # to get the data with imputed missing values in the format format like the data with missing values delete last column
-    m_data <- m_data[,c("steps", "date","interval")] # and reorder columns
-        
-    sum_steps_m <- aggregate(m_data$steps, by = list(m_data$date), sum) # calculate # steps per day with imputed missing values 
-    names(sum_steps_m) <- c("date","steps") # rename result 
+```
+## [1] 15264
+```
 
-7. Histogram of the total number of steps taken each day after missing values are imputed
-=========================================================================================
+Now we want to fill in the missing values. Each NA value is set to be the average number of steps for the corresponding interval for the tidy data.    
 
-The histogram for the dataset with imputed missing values is:
 
-    hist_steps_NA_imputed <- ggplot(sum_steps_m, aes(date,steps)) + geom_histogram(stat = "identity")+ ggtitle("Number of steps per day with missing values imputed") 
+```r
+m_data <- merge(data,mean_int, by.x = "interval", by.y = "interval", all.x = TRUE) # merge raw data (data) and table with avg # of steps per interval (mean_int)
+    
+for (i in which(is.na(m_data[,2]))) { # for each NA set the missing value to be the avg # of steps of the corresponding interval 
+    m_data[i,2] <- m_data[i,4]
+} 
+    
+m_data$`mean(steps)` <- NULL # to get the data with imputed missing values in the format format like the data with missing values delete last column
+m_data <- m_data[,c("steps", "date","interval")] # and reorder columns
+    
+sum_steps_m <- aggregate(m_data$steps, by = list(m_data$date), sum) # calculate # steps per day with imputed missing values 
+names(sum_steps_m) <- c("date","steps") # rename result 
+```
 
-    ## Warning: Ignoring unknown parameters: binwidth, bins, pad
 
-    print(hist_steps_NA_imputed)
+# 7. Histogram of the total number of steps taken each day after missing values are imputed
 
-![](PA1_template_files/figure-markdown_strict/unnamed-chunk-8-1.png)
+The histogram for the dataset with imputed missing values is: 
+
+
+```r
+hist_steps_NA_imputed <- ggplot(sum_steps_m, aes(date,steps)) + geom_histogram(stat = "identity")+ ggtitle("Number of steps per day with missing values imputed") 
+```
+
+```
+## Warning: Ignoring unknown parameters: binwidth, bins, pad
+```
+
+```r
+print(hist_steps_NA_imputed)
+```
+
+![](Figs/unnamed-chunk-8-1.png)<!-- -->
 
 Mean and median are:
 
-    mean(sum_steps_m$steps) # calculate mean
 
-    ## [1] 10766.19
+```r
+mean(sum_steps_m$steps) # calculate mean
+```
 
-    median(sum_steps_m$steps) # calculate median
+```
+## [1] 10766.19
+```
 
-    ## [1] 10766.19
+```r
+median(sum_steps_m$steps) # calculate median
+```
 
-8. Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends
-============================================================================================================
+```
+## [1] 10766.19
+```
 
-    m_data$dayType <- ifelse(weekdays(as.Date(m_data$date)) %in% c("Samstag","Sonntag"), "weekend", "weekday") # create factor variable indicating whether day is weekday or weekend 
-    ggplot(m_data, aes(interval,steps)) + stat_summary(fun.y = mean, geom = "line", colour = "blue") + facet_wrap(~dayType) + ggtitle("Average number of steps per interval") # plot average number of steps per interval, seperately for weekdays and weekend 
+# 8. Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends
 
-![](PA1_template_files/figure-markdown_strict/unnamed-chunk-10-1.png)
 
-9. All of the R code needed to reproduce the results (numbers, plots, etc.) in the report
-=========================================================================================
+```r
+m_data$dayType <- ifelse(weekdays(as.Date(m_data$date)) %in% c("Samstag","Sonntag"), "weekend", "weekday") # create factor variable indicating whether day is weekday or weekend 
+ggplot(m_data, aes(interval,steps)) + stat_summary(fun.y = mean, geom = "line", colour = "blue") + facet_wrap(~dayType) + ggtitle("Average number of steps per interval") # plot average number of steps per interval, seperately for weekdays and weekend 
+```
 
-Number 1-8 contain the respective code chunks to reproduce the results.
+![](Figs/unnamed-chunk-10-1.png)<!-- -->
+
+# 9. All of the R code needed to reproduce the results (numbers, plots, etc.) in the report
+
+Number 1-8 contain the respective code chunks to reproduce the results.  

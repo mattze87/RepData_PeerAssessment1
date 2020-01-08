@@ -1,8 +1,9 @@
 
-
 ---
 title: RR WEEK 2 - COURSE PROJECT 1
-output: md_document
+output: 
+  html_document:
+    keep_md: true
 
 
 ---
@@ -19,6 +20,10 @@ library(ggplot2) # load required packages
 data <- read.csv("activity.csv") # read in data 
 data_clean <- data[!is.na(data$steps),] # remove rows with NA values i.e. consider only clean/tidy data  
 
+```
+
+```{r global_options}
+knitr::opts_chunk$set(fig.path='Figs/')
 ```
 
 # 2. Histogram of the total number of steps taken each day.  
